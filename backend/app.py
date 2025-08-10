@@ -19,6 +19,7 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 # -----------------------------
 # 환경변수
@@ -46,6 +47,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # =========================================================
 # 0) 공통 유틸
@@ -85,24 +88,30 @@ def _search_finnhub_candidates(query: str) -> List[Dict[str, Any]]:
         return []
 
 def _rank_kr_candidates(q: str, items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """KRX(.KS/.KQ)만 남기고 간단 점수로 정렬"""
+    """KRX(.KS/.KQ) 또는 글로벌 종목을 포함하여 간단 점수로 정렬"""
     try:
         q_norm = q.strip().lower()
-        kr = [x for x in items if isinstance(x.get("symbol",""), str) and x["symbol"].endswith((".KS",".KQ"))]
+        # 모든 종목 포함
+        candidates = [
+            x for x in items if isinstance(x.get("symbol", ""), str)
+        ]
 
         def score(x):
-            sym = x.get("symbol","")
+            sym = x.get("symbol", "")
             desc = (x.get("description") or "").lower()
-            # finnhub는 description에 회사명/거래소 정보가 들어오는 편
+            # 이름 매칭 점수
             name_hit = 0
             if q_norm in desc: name_hit += 2
             if q_norm == desc: name_hit += 2
-            exch_boost = 0.2 if sym.endswith(".KS") else 0.0
-            # 기본 점수 대용(길이 역가중 등 단순화)
+            # 거래소 우선순위 (KRX > NASDAQ/NYSE > 기타)
+            exch_boost = 0.3 if sym.endswith(".KS") or sym.endswith(".KQ") else (
+                0.2 if sym in ["TSLA", "AAPL", "GOOGL"] else 0.0
+            )
+            # 기본 점수
             base = 1.0
             return base + name_hit + exch_boost
 
-        return sorted(kr, key=score, reverse=True)
+        return sorted(candidates, key=score, reverse=True)
     except Exception as e:
         print(f"Error in _rank_kr_candidates: {e}")
         return []
@@ -111,7 +120,7 @@ def resolve_kr_ticker(user_input: str) -> Dict[str, str]:
     try:
         s = user_input.strip()
         quotes = _search_finnhub_candidates(s)
-        print(f"Quotes for {s}: {quotes}")
+        print(f"Quotes for {s}: {quotes}")  # Finnhub API 검색 결과 출력
         ranked = _rank_kr_candidates(s, quotes)
         print(f"Ranked candidates for {s}: {ranked}")
         if not ranked:
@@ -144,6 +153,7 @@ def get_metrics_from_finnhub(ticker: str):
             print("metric call failed:", r.status_code, r.text[:200])
             return None, None, None
         metric = (r.json() or {}).get("metric", {}) or {}
+        print(f"Full metric response for {ticker}: {r.json()}")  # 전체 응답 출력
 
         # PER
         per = (
@@ -159,6 +169,15 @@ def get_metrics_from_finnhub(ticker: str):
             _to_float(metric.get("priceToBookAnnual")) or
             _to_float(metric.get("priceToBookMRQ"))
         )
+        # PBR 계산 추가
+        if pbr is None:
+            price = _to_float(metric.get("currentPrice"))
+            bvps = _to_float(metric.get("bookValuePerShare"))
+            if price is not None and bvps is not None:
+                pbr = price / bvps
+                print(f"Calculated PBR for {ticker}: {pbr}")
+            else:
+                print(f"PBR data is missing and cannot be calculated for {ticker}")
 
         # ROE(%)
         roe = (
@@ -245,8 +264,7 @@ def gpt_generate(company, roe, per, pbr, rpg_title, rpg_desc):
 
         resp = client.responses.create(
             model="gpt-4o-mini",
-            input=[{"role": "user", "content": user_prompt}],
-            response_format={"type": "json_schema", "json_schema": {"name": "RPGSummary", "schema": SUMMARY_SCHEMA}}
+            input=[{"role": "user", "content": user_prompt}]
         )
         return resp.output_parsed
     except Exception as e:
@@ -321,6 +339,14 @@ def analyze(ticker: str, company: Optional[str] = None):
     except Exception as e:
         print(f"Error in analyze: {e}")
         raise HTTPException(status_code=500, detail="분석 중 오류가 발생했습니다.")
+
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the KR Stock Analyzer API. Use /docs for API documentation."}
+
+@app.get("/favicon.ico")
+async def favicon():
+    return {"message": "Favicon is available at /static/favicon.ico"}
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):

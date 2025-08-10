@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
+const API_BASE_URL = "http://127.0.0.1:8000";
+
 function App() {
   const [search, setSearch] = useState(''); // 검색어 상태
   const [data, setData] = useState(null); // API 응답 데이터 상태
@@ -14,13 +16,17 @@ function App() {
 
     try {
       setError(null); // 기존 에러 초기화
-      const response = await axios.get(`/api/analyze_by_name`, {
+      const response = await axios.get(`${API_BASE_URL}/api/analyze_by_name`, {
         params: { name: search.trim() }, // 사용자가 입력한 검색어를 API 요청에 포함
       });
       setData(response.data); // API 응답 데이터를 상태에 저장
     } catch (err) {
       setError(err.response?.data?.detail || '데이터를 가져오는 중 오류가 발생했습니다.');
     }
+  };
+
+  const renderMetric = (metric) => {
+    return metric !== null && metric !== undefined ? metric : "데이터 없음";
   };
 
   return (
