@@ -83,7 +83,7 @@ function App() {
             {/* Summary and Insights */}
             <div className="p-4 bg-white rounded shadow space-y-4">
               <div>
-                <h3 className="font-bold">3문장 요약</h3>
+                <h3 className="font-bold">요약</h3>
                 <ul className="list-disc pl-5">
                   {data.summary3.map((item, index) => (
                     <li key={index}>{item}</li>

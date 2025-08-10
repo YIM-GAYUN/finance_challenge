@@ -15,6 +15,7 @@ load_dotenv()
 
 import pandas as pd
 import numpy as np
+import json
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -153,7 +154,6 @@ def get_metrics_from_finnhub(ticker: str):
             print("metric call failed:", r.status_code, r.text[:200])
             return None, None, None
         metric = (r.json() or {}).get("metric", {}) or {}
-        print(f"Full metric response for {ticker}: {r.json()}")  # 전체 응답 출력
 
         # PER
         per = (
@@ -167,7 +167,9 @@ def get_metrics_from_finnhub(ticker: str):
         pbr = (
             _to_float(metric.get("pbRatioTTM")) or
             _to_float(metric.get("priceToBookAnnual")) or
-            _to_float(metric.get("priceToBookMRQ"))
+            _to_float(metric.get("priceToBookMRQ")) or
+            _to_float(metric.get("pbTTM")) or
+            _to_float(metric.get("pbAnnual"))
         )
         # PBR 계산 추가
         if pbr is None:
@@ -236,12 +238,14 @@ SUMMARY_SCHEMA = {
 def gpt_generate(company, roe, per, pbr, rpg_title, rpg_desc):
     try:
         user_prompt = f"""
-[3문장 요약]
+[요약]
 - 회사명: {company}
 - ROE(%): {roe}
 - PER(x): {per}
 - PBR(x): {pbr}
-규칙: 정확히 3문장. 1) 현재 상태 2) 시사점 3) 주의/리스크.
+규칙: 1. 회사명을 기반으로, ROE, PER, PBR을 분석하여 앞으로 이 회사에 어떻게 투자해야할지 조언하는 문장 2~3문장 필수로 출력하기 (investment_advice)
+     2. 회사명을 기반으로 해당 회사의 최근 뉴스나 이벤트를 반영하여 투자 전략을 2~3문장으로 필수로 제시하기 (recent_news_strategy)
+     3. rpg_title과 rpg_desc를 반영하여 이 회사가 rpg_title로서 어떻게 활동하고있는지 rpg_desc를 풀어서 1~2문장으로 필수로 설명하기 (rpg_title_desc)
 
 [캐릭터 코멘트]
 - RPG: {rpg_title}
@@ -262,16 +266,39 @@ def gpt_generate(company, roe, per, pbr, rpg_title, rpg_desc):
                 }
             }
 
-        resp = client.responses.create(
-            model="gpt-4o-mini",
-            input=[{"role": "user", "content": user_prompt}]
+        # OpenAI API 호출
+        resp = client.chat.completions.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": user_prompt}],
+            temperature=0.2
         )
-        return resp.output_parsed
+
+        print(f"OpenAI API response: {resp}")
+
+        content = resp.choices[0].message.content  # 문자열(JSON)
+        raw_data = json.loads(content)  # dict로 파싱
+
+        # OpenAI 응답 데이터를 summary3와 insights로 매핑
+        summary3 = [
+            raw_data.get("investment_advice", ""),
+            raw_data.get("recent_news_strategy", ""),
+            raw_data.get("rpg_title_desc", "")
+        ]
+        insights = {
+            "caution": raw_data.get("caution", ""),
+            "positive": raw_data.get("advantage", "")
+        }
+
+        return {"summary3": summary3, "insights": insights}
+
     except Exception as e:
         print(f"Error in gpt_generate: {e}")
         return {
             "summary3": ["OpenAI API 호출 실패"],
-            "insights": {"caution": "OpenAI API 호출 실패", "positive": "OpenAI API 호출 실패"}
+            "insights": {
+                "caution": "OpenAI API 호출 실패",
+                "positive": "오프라인 모드로 계속 진행"
+            }
         }
 
 # =========================================================
