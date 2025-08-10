@@ -21,6 +21,7 @@ from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from bs4 import BeautifulSoup
 
 # -----------------------------
 # 환경변수
@@ -139,19 +140,24 @@ def resolve_kr_ticker(user_input: str) -> Dict[str, str]:
         raise HTTPException(status_code=500, detail="티커 변환 중 오류가 발생했습니다.")
 
 # =========================================================
-# 2) 지표 수집 (Finnhub /stock/metric)
-#    GET /stock/metric?symbol=...&metric=all&token=...
-#    주요 필드: peTTM, pbRatioTTM, roeTTM 등 (없을 경우 대체 키도 시도)
+# 2) 지표 수집 (Finnhub /stock/metric + 네이버 금융 크롤링)
 # =========================================================
 def get_metrics_from_finnhub(ticker: str):
     try:
+        # 티커가 .KS 또는 .KQ로 끝날 경우 Finnhub를 건너뛰고 네이버 금융 크롤링 시도
+        if ticker.endswith(".KS") or ticker.endswith(".KQ"):
+            kr_ticker = ticker.split(".")[0]  # 접미사 제거 (숫자 6자리만 남김)
+            print(f"Ticker '{ticker}' detected as KR code. Using Naver Finance directly with ticker: {kr_ticker}")
+            return get_metrics_from_naver_finance(kr_ticker)
+
+        # Finnhub API 호출
         r = requests.get(
             f"{FINNHUB}/stock/metric",
             params={"symbol": ticker, "metric": "all", "token": FINNHUB_API_KEY},
             timeout=10
         )
         if not r.ok:
-            print("metric call failed:", r.status_code, r.text[:200])
+            print("Finnhub metric call failed:", r.status_code, r.text[:200])
             return None, None, None
         metric = (r.json() or {}).get("metric", {}) or {}
 
@@ -195,6 +201,160 @@ def get_metrics_from_finnhub(ticker: str):
     except Exception as e:
         print(f"Error in get_metrics_from_finnhub: {e}")
         return None, None, None
+
+# =========================================================
+# 네이버 금융 크롤링
+# =========================================================
+import re, time, json
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+from bs4 import BeautifulSoup
+
+NAVER_JSON_URL = "https://api.finance.naver.com/service/itemSummary.nhn"
+NAVER_HTML_URL = "https://finance.naver.com/item/main.naver?code={itemcode}"
+
+def _extract_itemcode(ticker_or_code: str | None) -> str | None:
+    if not ticker_or_code:
+        return None
+    m = re.search(r'(\d{6})', str(ticker_or_code))
+    return m.group(1) if m else None
+
+def _to_float_safe(s):
+    """쉼표·단위(원, 배 등) 포함 문자열에서도 숫자만 추출하여 float 변환"""
+    if s is None:
+        return None
+    if isinstance(s, (int, float)):
+        try:
+            import math
+            if isinstance(s, float) and math.isnan(s):
+                return None
+        except Exception:
+            pass
+        return float(s)
+
+    s = str(s).strip()
+    if s in {"", "-", "N/A", "NaN"}:
+        return None
+
+    # 일반적인 제거 후에도 남는 단위가 있을 수 있으므로 최종적으로 숫자 패턴을 추출
+    s = s.replace(",", "").replace("%", "")
+    m = re.search(r"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?", s)
+    return float(m.group(0)) if m else None
+
+def _session_with_retries():
+    s = requests.Session()
+    retries = Retry(
+        total=3,
+        backoff_factor=0.5,  # 0.5s, 1s, 2s ...
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["GET"]
+    )
+    s.mount("https://", HTTPAdapter(max_retries=retries))
+    return s
+
+def get_metrics_from_naver_finance(ticker_or_code: str):
+    itemcode = _extract_itemcode(ticker_or_code)
+    if not itemcode:
+        return None, None, None
+
+    sess = _session_with_retries()
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+        "Accept": "application/json, text/plain, */*",
+        "Referer": NAVER_HTML_URL.format(itemcode=itemcode),
+        "Connection": "keep-alive",
+    }
+
+    per = pbr = roe = eps = bps = None
+
+    # 1) JSON 엔드포인트 시도 (가장 간단/안정)
+    try:
+        r = sess.get(NAVER_JSON_URL, headers=headers, params={"itemcode": itemcode}, timeout=5)
+        if not r.content:
+            time.sleep(0.4)
+            r = sess.get(NAVER_JSON_URL, headers=headers, params={"itemcode": itemcode}, timeout=5)
+
+        if not r.content:
+            raise ValueError("Empty body from Naver JSON")
+
+        js = r.json()
+        per = _to_float_safe(js.get("per"))
+        pbr = _to_float_safe(js.get("pbr"))
+        roe = _to_float_safe(js.get("roe"))
+        eps = _to_float_safe(js.get("eps"))
+        bps = _to_float_safe(js.get("bps"))  # JSON에 bps가 있으면 1순위로 사용
+        print(f"JSON Response: {js}")
+    except Exception as e:
+        print(f"[naver itemSummary error] {e} (itemcode={itemcode})")
+
+    # 2) HTML 폴백 (부족한 값만 채움)
+    if per is None or pbr is None or roe is None or eps is None or bps is None:
+        try:
+            html_headers = {
+                "User-Agent": "Mozilla/5.0",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            }
+            url = NAVER_HTML_URL.format(itemcode=itemcode)
+            res = sess.get(url, headers=html_headers, timeout=6)
+            res.raise_for_status()
+            soup = BeautifulSoup(res.text, "html.parser")
+
+            # id 기반(있으면 가장 신뢰)
+            if per is None:
+                node = soup.select_one("#_per")
+                per = _to_float_safe(node.get_text(strip=True)) if node else per
+            if pbr is None:
+                node = soup.select_one("#_pbr") or soup.select_one("#pbr")  # 언더스코어/무언더스코어 둘 다 대응
+                pbr = _to_float_safe(node.get_text(strip=True)) if node else pbr
+            if roe is None:
+                node = soup.select_one("#_roe")
+                roe = _to_float_safe(node.get_text(strip=True)) if node else roe
+            if eps is None:
+                node = soup.select_one("#_eps")
+                eps = _to_float_safe(node.get_text(strip=True)) if node else eps
+
+            # BPS: 너가 확인한 구조 - <em id="pbr">PBR</em> 바로 다음 <em>이 BPS(원 단위)
+            if bps is None:
+                em_pbr = soup.select_one("em#_pbr") or soup.select_one("em#pbr")
+                if em_pbr:
+                    # 같은 <td> 안의 두 번째 em을 우선 시도
+                    td = em_pbr.find_parent("td")
+                    ems = td.find_all("em") if td else []
+                    if len(ems) >= 2:
+                        bps = _to_float_safe(ems[1].get_text(strip=True))
+                    # 보조: 문서 순서상 다음 em 하나만 집는다
+                    if bps is None:
+                        nxt = em_pbr.find_next("em")
+                        if nxt and nxt is not em_pbr:
+                            bps = _to_float_safe(nxt.get_text(strip=True))
+
+            # 최후 보강: 표 헤더가 'BPS'인 셀을 찾아 오른쪽(td) 값
+            if bps is None:
+                th_bps = soup.find(["th", "dt"], string=re.compile(r"\bBPS\b", re.I))
+                if th_bps:
+                    td_bps = th_bps.find_next("td") or (th_bps.parent.find_next("td") if th_bps.parent else None)
+                    if td_bps:
+                        bps = _to_float_safe(td_bps.get_text(" ", strip=True))
+
+            # 마지막 보조: '원'이 포함된 em 주변에서 숫자만 추출
+            if bps is None:
+                em_with_won = soup.find("em", string=re.compile(r"원"))
+                if em_with_won:
+                    candidate = em_with_won.get_text(" ", strip=True)
+                    if _to_float_safe(candidate) is None:
+                        candidate = (em_with_won.previous_sibling or "") or em_with_won.parent.get_text(" ", strip=True)
+                    bps = _to_float_safe(candidate)
+
+        except Exception as e:
+            print(f"[naver HTML fallback error] {e} (itemcode={itemcode})")
+
+    # 3) ROE 직접 계산 (eps/bps 모두 있고 bps != 0일 때)
+    if roe is None and eps is not None and bps is not None and bps != 0:
+        roe = round((eps / bps) * 100, 2)
+
+    print(f"Debug - PER: {per}, PBR: {pbr}, ROE: {roe}, EPS: {eps}, BPS: {bps}")
+    return per, pbr, roe
 
 # =========================================================
 # 3) RPG 분류 & GPT 요약 (기존 로직 재사용)
