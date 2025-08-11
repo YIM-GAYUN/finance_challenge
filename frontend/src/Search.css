@@ -41,7 +41,7 @@ body {
 .search-bar {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  margin-top: 40px;
   margin-bottom: 10px;
 }
 
@@ -86,7 +86,7 @@ body {
 .rpg-image {
   display: block;
   margin: 0 auto;
-  width: 250px;
+  width: 320px;
   height: auto;
 }
 
@@ -97,11 +97,25 @@ body {
 .bginfo {
   text-align: center;
   font-size: 24px;
-  margin-top: 80px;
+  margin-top: 120px;
 }
 
 .bginfo2 {
   text-align: center;
   font-size: 20px;
   margin-top: 10px;
+}
+
+.loading {
+  text-align: center;
+  font-size: 18px;
+  color: gray;
+  margin-top: 20px;
+}
+
+.loading-image {
+  display: block;
+  margin: 0 auto;
+  width: 70px;
+  height: 70px;
 }

@@ -10,10 +10,12 @@ const Search = () => {
   const [search, setSearch] = useState(""); // 검색어 상태
   const [data, setData] = useState(null); // API 응답 데이터 상태
   const [error, setError] = useState(null); // 에러 상태
+  const [loading, setLoading] = useState(false); // 로딩 상태 추가
 
   const handleSearch = async () => {
     setError(null);
     setData(null);
+    setLoading(true); // 로딩 시작
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/analyze_by_name?name=${encodeURIComponent(search)}`);
@@ -24,6 +26,8 @@ const Search = () => {
       setData(result);
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoading(false); // 로딩 종료
     }
   };
 
@@ -51,6 +55,13 @@ const Search = () => {
           </button>
         </div>
 
+        {loading && (
+          <div className="loading">
+            <img src="/asset/loading.gif" alt="Loading" className="loading-image" />
+            <p>캐릭터 및 투자 정보를 생성중입니다. 잠시만 기다려주세요...</p>
+          </div>
+        )}
+
         {error && <div className="error">에러: {error}</div>}
 
         {data && (
@@ -74,7 +85,7 @@ const Search = () => {
                 <strong>직업:</strong> {data.rpg.job} &emsp;
                 <strong>성격:</strong> {data.rpg.temper}
               </p>
-              <p><strong>설명:</strong> {data.rpg.description}</p>
+              <p><strong>설명:</strong> {data.rpg.description}</p><br />
               {data.rpg.title && (
                 <img 
                   src={`/asset/${data.rpg.title}.png`} 
@@ -85,7 +96,7 @@ const Search = () => {
             </div>
 
             <div className="investment-summary">
-              <div className='info'>투자 요약</div><br />
+              <div className='info'>투자 정보</div><br />
               <ul>
                 {data.summary3.map((summary, index) => (
                   <li key={index}>{summary}</li>
