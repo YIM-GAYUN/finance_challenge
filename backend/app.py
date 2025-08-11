@@ -76,6 +76,10 @@ cache = TTLCache(maxsize=128, ttl=3600)  # 1시간 캐시
 @cached(cache)
 def _search_finnhub_candidates(query: str) -> List[Dict[str, Any]]:
     try:
+        query = query.strip()  # 앞뒤 공백 제거
+        query = re.sub(r'[^\w\s]', '', query)  # 특수 문자 제거
+        query = ' '.join(query.split())  # 중복 공백 제거
+
         r = requests.get(
             f"{FINNHUB}/search",
             params={"q": query, "token": FINNHUB_API_KEY},
@@ -121,12 +125,19 @@ def _rank_kr_candidates(q: str, items: List[Dict[str, Any]]) -> List[Dict[str, A
 def resolve_kr_ticker(user_input: str) -> Dict[str, str]:
     try:
         s = user_input.strip()
+
+        # 한국어 종목명일 경우 GPT를 사용하여 영어로 변환
+        if re.search(r"[가-힣]", s):  # 한국어 문자가 포함된 경우
+            print(f"Detected Korean name: {s}. Translating to English using GPT.")
+            s = translate_kor_to_eng_with_gpt(s)
+
+        print(f"Final query for Finnhub API: '{s}'")  # Finnhub API에 전달될 쿼리 출력
         quotes = _search_finnhub_candidates(s)
         print(f"Quotes for {s}: {quotes}")  # Finnhub API 검색 결과 출력
         ranked = _rank_kr_candidates(s, quotes)
         print(f"Ranked candidates for {s}: {ranked}")
         if not ranked:
-            raise HTTPException(status_code=404, detail=f"검색 결과가 없습니다: {user_input}")
+            raise HTTPException(status_code=404, detail=f"검색 결과가 없습니다: {user_input}. 더 자세한 종목명을 입력해주세요.")
 
         top = ranked[0]
         return {
@@ -560,3 +571,45 @@ async def validation_exception_handler(request, exc):
         status_code=422,
         content={"detail": exc.errors()},
     )
+
+def translate_kor_to_eng_with_gpt(kor_name: str) -> str:
+    """
+    GPT를 사용하여 한국어 종목명을 영어 종목명으로 변환 (JSON 형식 강제)
+    """
+    try:
+        if client is None:
+            raise RuntimeError("OpenAI API Key가 설정되지 않았습니다.")
+
+        # 프롬프트 수정: JSON 형식 강제
+        prompt = f"""
+        아래의 한국어 종목명을 영어 종목명으로 변환하세요.
+        - 한국어 종목명: "{kor_name}"
+        - 영어 종목명만 JSON 형식으로 반환하세요. 최대한 한 단어로만 반환하세요. 여러 단어로만 해야할 경우에는 꼭 띄어쓰기를 지키세요. 다른 설명은 포함하지 마세요.
+        - JSON 형식 예시: {{ "english_name": "Samsung" }}
+        """
+
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.2
+        )
+
+        # GPT 응답에서 JSON 파싱
+        content = response.choices[0].message.content.strip()
+        print(f"GPT raw response: {content}")
+        eng_name_json = json.loads(content)  # JSON 파싱
+        eng_name = eng_name_json.get("english_name", "").strip()
+        if not eng_name:
+            raise ValueError("영어 종목명을 찾을 수 없습니다.")
+        
+        # 특수 문자 제거 및 공백 정리
+        eng_name = re.sub(r'[^\w\s]', '', eng_name)  # 특수 문자 제거
+        eng_name = ' '.join(eng_name.split())  # 중복 공백 제거
+        print(f"Translated '{kor_name}' to '{eng_name}' using GPT.")
+        return eng_name
+    except json.JSONDecodeError as e:
+        print(f"JSON parsing error: {e}")
+        raise HTTPException(status_code=500, detail="GPT 응답에서 JSON 형식이 올바르지 않습니다.")
+    except Exception as e:
+        print(f"Error in translate_kor_to_eng_with_gpt: {e}")
+        raise HTTPException(status_code=500, detail="종목명 변환 중 오류가 발생했습니다.")

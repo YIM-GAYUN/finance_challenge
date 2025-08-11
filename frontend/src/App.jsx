@@ -1,111 +1,79 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState } from "react";
 
 const API_BASE_URL = "http://127.0.0.1:8000";
 
 function App() {
-  const [search, setSearch] = useState(''); // 검색어 상태
+  const [search, setSearch] = useState(""); // 검색어 상태
   const [data, setData] = useState(null); // API 응답 데이터 상태
   const [error, setError] = useState(null); // 에러 상태
 
   const handleSearch = async () => {
-    if (!search.trim()) {
-      setError('검색어를 입력해주세요.');
-      return;
-    }
+    setError(null);
+    setData(null);
 
     try {
-      setError(null); // 기존 에러 초기화
-      const response = await axios.get(`${API_BASE_URL}/api/analyze_by_name`, {
-        params: { name: search.trim() }, // 사용자가 입력한 검색어를 API 요청에 포함
-      });
-      setData(response.data); // API 응답 데이터를 상태에 저장
+      const response = await fetch(`${API_BASE_URL}/api/analyze_by_name?name=${encodeURIComponent(search)}`);
+      if (!response.ok) {
+        throw new Error("데이터를 가져오는 데 실패했습니다.");
+      }
+      const result = await response.json();
+      setData(result);
     } catch (err) {
-      setError(err.response?.data?.detail || '데이터를 가져오는 중 오류가 발생했습니다.');
+      setError(err.message);
     }
-  };
-
-  const renderMetric = (metric) => {
-    return metric !== null && metric !== undefined ? metric : "데이터 없음";
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      {/* Main Title */}
-      <h1 className="text-4xl font-bold text-center text-blue-600 mb-6">은행 해커톤</h1>
+    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      <h1>KR Stock Analyzer</h1>
+      <div style={{ marginBottom: "20px" }}>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="종목명을 입력하세요 (예: 삼성전자)"
+          style={{ padding: "10px", width: "300px", marginRight: "10px" }}
+        />
+        <button onClick={handleSearch} style={{ padding: "10px 20px" }}>
+          검색
+        </button>
+      </div>
 
-      {/* Header */}
-      <header className="mb-6">
-        <div className="flex items-center justify-center">
-          <input
-            type="text"
-            placeholder="기업 키워드 입력"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)} // 검색어 상태 업데이트
-            className="border rounded-l px-4 py-2 w-1/2"
-          />
-          <button
-            onClick={handleSearch} // 검색 버튼 클릭 시 API 호출
-            className="bg-blue-600 text-white px-4 py-2 rounded-r"
-          >
-            검색
-          </button>
+      {error && <div style={{ color: "red" }}>에러: {error}</div>}
+
+      {data && (
+        <div style={{ border: "1px solid #ccc", padding: "20px", borderRadius: "5px" }}>
+          <h2>종목 정보</h2>
+          <p><strong>회사명:</strong> {data.company}</p>
+          <p><strong>티커:</strong> {data.ticker}</p>
+
+          <h3>주요 지표</h3>
+          <p><strong>ROE:</strong> {data.roe !== null ? `${data.roe}%` : "데이터 없음"}</p>
+          <p><strong>PER:</strong> {data.per !== null ? `${data.per}x` : "데이터 없음"}</p>
+          <p><strong>PBR:</strong> {data.pbr !== null ? `${data.pbr}x` : "데이터 없음"}</p>
+
+          <h3>RPG 분류</h3>
+          <p><strong>타이틀:</strong> {data.rpg.title}</p>
+          <p><strong>직업:</strong> {data.rpg.job}</p>
+          <p><strong>성격:</strong> {data.rpg.temper}</p>
+          <p><strong>설명:</strong> {data.rpg.description}</p>
+
+          <h3>투자 요약</h3>
+          <ul>
+            {data.summary3.map((summary, index) => (
+              <li key={index}>{summary}</li>
+            ))}
+          </ul>
+
+          <h3>인사이트</h3>
+          <p><strong>주의:</strong> {data.insights.caution}</p>
+          <p><strong>장점:</strong> {data.insights.positive}</p>
+
+          <h3>데이터 출처</h3>
+          <p><strong>출처:</strong> {data.source.primary}</p>
+          <p><strong>기준 시점:</strong> {data.source.as_of}</p>
         </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="space-y-6">
-        {error && (
-          <div className="text-red-500 text-center">{error}</div>
-        )}
-
-        {data ? (
-          <>
-            {/* Metric Chips */}
-            <div className="flex space-x-4">
-              <div className={`px-4 py-2 rounded ${data.roe >= 10 ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}>
-                ROE: {data.roe}%
-              </div>
-              <div className={`px-4 py-2 rounded ${data.per <= 12 ? 'bg-green-500 text-white' : 'bg-orange-500 text-white'}`}>
-                PER: {data.per}x
-              </div>
-              <div className={`px-4 py-2 rounded ${data.pbr <= 1 ? 'bg-green-500 text-white' : 'bg-orange-500 text-white'}`}>
-                PBR: {data.pbr}x
-              </div>
-            </div>
-
-            {/* RPG Card */}
-            <div className="p-4 bg-white rounded shadow">
-              <h2 className="text-xl font-bold mb-2">{data.rpg.title}</h2>
-              <p className="text-sm text-gray-600">{data.rpg.description}</p>
-            </div>
-
-            {/* Summary and Insights */}
-            <div className="p-4 bg-white rounded shadow space-y-4">
-              <div>
-                <h3 className="font-bold">요약</h3>
-                <ul className="list-disc pl-5">
-                  {data.summary3.map((item, index) => (
-                    <li key={index}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-              <div className="flex space-x-4">
-                <div className="flex items-center space-x-2">
-                  <span className="text-yellow-500">⚠️</span>
-                  <p>{data.insights.caution}</p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <span className="text-green-500">✅</span>
-                  <p>{data.insights.positive}</p>
-                </div>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="text-center text-gray-500">검색 결과가 여기에 표시됩니다.</div>
-        )}
-      </main>
+      )}
     </div>
   );
 }
