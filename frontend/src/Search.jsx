@@ -56,11 +56,11 @@ const Search = () => {
         {data && (
           <div className="search-results">
             <div className="stock-info">
-              <h2>종목 정보</h2><br />
+              <div className="info">종목 정보</div><br />
               <p><strong>회사명:</strong> {data.company}</p>
               <p><strong>티커:</strong> {data.ticker}</p><br />
 
-              <h3>주요 지표</h3>
+              <h3>⚜️주요 지표</h3>
               <p>
                 <strong>ROE:</strong> {data.roe !== null ? `${data.roe}%` : "데이터 없음"} &emsp;
                 <strong>PER:</strong> {data.per !== null ? `${data.per}x` : "데이터 없음"} &emsp;
@@ -68,7 +68,7 @@ const Search = () => {
               </p>
               <br />
 
-              <h3>RPG 캐릭터 분류</h3>
+              <h3>⚜️RPG 캐릭터 분류</h3>
               <p>
                 <strong>타이틀:</strong> {data.rpg.title} &emsp;
                 <strong>직업:</strong> {data.rpg.job} &emsp;
@@ -85,7 +85,7 @@ const Search = () => {
             </div>
 
             <div className="investment-summary">
-              <h2>투자 요약</h2><br />
+              <div className='info'>투자 요약</div><br />
               <ul>
                 {data.summary3.map((summary, index) => (
                   <li key={index}>{summary}</li>
@@ -93,15 +93,23 @@ const Search = () => {
               </ul>
               <br />
 
-              <h3>인사이트</h3>
+              <h3>⚜️인사이트</h3>
               <p><strong>주의:</strong> {data.insights.caution || '위 요약본 참고'}</p>
               <p><strong>장점:</strong> {data.insights.positive || '위 요약본 참고'}</p>
 
               <br />
-              <h3>데이터 출처</h3>
+              <h3>⚜️데이터 출처</h3>
               <p><strong>출처:</strong> {data.source.primary}</p>
               <p><strong>기준 시점:</strong> {data.source.as_of}</p>
             </div>
+          </div>
+        )}
+
+        {!data && !error && (
+          <div className="background-image">
+            <div className = 'bginfo'>내가 투자하는 종목의 RPG 캐릭터성을 알아보세요</div>
+            <div className = 'bginfo2'>RPG 캐릭터에 대한 각각의 설명은 '캐릭터 소개' 페이지에서 확인할 수 있습니다.</div>
+            <img src="/asset/bg.png" alt="Background" />
           </div>
         )}
       </main>
