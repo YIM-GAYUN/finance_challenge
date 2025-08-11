@@ -1,0 +1,38 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f5f5f5;
+  padding: 10px 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+  width: 150px;
+  height: auto;
+}
+
+.nav {
+  display: flex;
+  gap: 50px;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: gray;
+  font-size: 16px;
+}
+
+.nav-link.active {
+  color: black;
+  font-weight: bold;
+}
+
+.main-content {
+  padding: 20px;
+}
