@@ -29,3 +29,29 @@ body {
 .main-content {
   padding: 20px;
 }
+
+.character-image {
+  width: 280px;
+  height: auto;
+}
+
+.character-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.character-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  text-align: left;
+  width: 100%;
+  gap: 20px;
+}
+
+.character-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}

@@ -20,7 +20,7 @@ const Search = () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/analyze_by_name?name=${encodeURIComponent(search)}`);
       if (!response.ok) {
-        throw new Error("데이터를 가져오는 데 실패했습니다.");
+        throw new Error("데이터를 가져오는 데 실패했습니다. 조금 더 구체적인 종목명 또는 영어 종목명을 작성해주세요!");
       }
       const result = await response.json();
       setData(result);

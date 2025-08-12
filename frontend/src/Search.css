@@ -96,8 +96,8 @@ body {
 .bginfo {
   text-align: center;
   font-family: 'cafe', sans-serif;
-  font-size: 34px;
-  margin-top: 120px;
+  font-size: 36px;
+  margin-top: 100px;
   color: #ffffff;
 }
 
@@ -112,9 +112,9 @@ body {
 .loading {
   text-align: center;
   font-size: 18px;
-  color: gray;
+  color: rgb(220, 220, 220);
   margin-top: 20px;
-  font-size: 20px;
+  font-size: 22px;
   font-family: 'esamanru', sans-serif;
 }
 
@@ -123,4 +123,12 @@ body {
   margin: 0 auto;
   width: 70px;
   height: 70px;
+}
+
+.error {
+  font-family: 'esamanru', sans-serif;
+  text-align: center;
+  font-size: 28px;
+  margin-top: 50px;
+  color: #ffffff;
 }

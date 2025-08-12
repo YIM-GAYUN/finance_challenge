@@ -28,4 +28,40 @@ body {
 
 .main-content {
   padding: 20px;
+  
+}
+
+.intro-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.intro-image {
+  width: 350px;
+  height: auto;
+  align-items: center;
+  margin-right: 200px;
+}
+
+.intro-text {
+  margin: 70px;
+  font-size: 40px;
+  font-family: 'esamanru', sans-serif;
+  color: #ffffff;
+}
+
+.intro-plus {
+  margin-left: 70px;
+  font-size: 50px;
+  font-family: 'esamanru', sans-serif;
+  color: #ffffff;
+}
+
+.intro-footer {
+  text-align: right;
+  margin: 100px;
+  font-size: 28px;
+  font-family: 'esamanru', sans-serif;
+  color: #ffffff;
 }
