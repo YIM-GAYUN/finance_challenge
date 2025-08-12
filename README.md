@@ -20,6 +20,9 @@ finance_challenge/
 │       ├── App.jsx        # React 메인 컴포넌트
 │       ├── index.css      # CSS 파일
 │       ├── main.jsx       # React 진입점
+│       ├── Search.jsx     # 검색 페이지 컴포넌트
+│       ├── Intro.jsx      # 소개 페이지 컴포넌트
+│       ├── Character.jsx  # 캐릭터 소개 페이지 컴포넌트
 │       └── ...            # 기타 소스 파일
 ```
 
@@ -62,10 +65,11 @@ finance_challenge/
 ---
 
 ## 주요 기능
-- **검색 바**: 사용자가 데이터를 검색할 수 있는 기능.
+- **검색 페이지**: 사용자가 종목명을 검색하고 관련 데이터를 확인할 수 있는 기능.
+- **소개 페이지**: 프로젝트의 개요와 RPG 캐릭터 기반 투자 설명 제공.
+- **캐릭터 소개 페이지**: RPG 캐릭터별 이미지와 설명을 제공.
 - **RPG 분류**: 데이터를 RPG 기준으로 분류.
 - **AI 기반 투자 전략 생성**: OpenAI GPT-4를 활용하여 투자 전략 및 요약 정보를 생성.
-- **데이터 시각화**: 차트 및 그래프를 통해 데이터를 시각적으로 표현.
 
 ---
 
@@ -79,30 +83,13 @@ finance_challenge/
 ---
 
 ## 문제 해결
-### 1. React 앱이 렌더링되지 않는 문제
-- `index.html` 파일에 다음 스크립트를 추가하여 해결:
-  ```html
-  <script type="module" src="/src/main.jsx"></script>
-  ```
+### 1. 레이아웃 및 스타일링
+- **검색 페이지**: 로딩 인디케이터와 검색 결과를 추가하여 사용자 경험 개선.
+- **소개 페이지**: 텍스트와 이미지를 적절히 배치하여 가독성 향상.
+- **캐릭터 소개 페이지**: 2행 3열 레이아웃으로 캐릭터 정보를 정렬하고, 이름과 설명을 이미지 오른쪽에 배치.
 
-### 2. Vite 설정 문제
-- `vite.config.js` 파일에서 `root`와 `build` 설정을 추가하여 해결:
-  ```javascript
-  export default {
-    root: './frontend',
-    build: {
-      outDir: 'dist',
-    },
-  };
-  ```
-
-### 3. OpenAI API 호출 실패
-- `.env` 파일에 `OPENAI_API_KEY`가 올바르게 설정되어 있는지 확인합니다.
-- OpenAI API 사용량 제한을 초과하지 않았는지 확인합니다.
-
-### 4. Finnhub API 데이터 누락
-- `.env` 파일에 `FINNHUB_API_KEY`가 올바르게 설정되어 있는지 확인합니다.
-- Finnhub API의 무료 플랜에서는 일부 데이터가 제한될 수 있습니다.
+### 2. API 호출 문제
+- `.env` 파일에 API 키를 올바르게 설정하여 OpenAI 및 Finnhub API 호출 문제 해결.
 
 ---
 
@@ -132,5 +119,3 @@ finance_challenge/
 
 ---
 
-## 라이선스
-이 프로젝트는 MIT 라이선스를 따릅니다.
