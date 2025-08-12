@@ -1,0 +1,32 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffc71e;
+  padding: 10px 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+  width: 120px;
+  height: 50px;
+}
+
+.nav {
+  display: flex;
+  gap: 5px; /* 간격을 줄여 글자 위치를 왼쪽으로 이동 */
+  font-size: 24px;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: gray;
+  font-size: 20px !important; /* 모든 상태에서 글자 크기를 강제로 24px로 설정 */
+  margin-right: 20px; /* 글자를 추가로 왼쪽으로 이동 */
+}
+
+.nav-link.active {
+  color: black;
+  font-weight: bold;
+  font-size: 24px; /* active 상태에서도 글자 크기를 24px로 설정 */
+}

@@ -1,37 +1,10 @@
+@import './common.css';
+
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #f5f5f5;
-  padding-left: 30px;
-  padding-right: 30px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.logo {
-  width: 150px;
-  height: auto;
-}
-
-.nav {
-  display: flex;
-  gap: 50px;
-}
-
-.nav-link {
-  text-decoration: none;
-  color: gray;
-  font-size: 16px;
-}
-
-.nav-link.active {
-  color: black;
-  font-weight: bold;
+  background-color: #494949; /* 어두운 회색 */
+  color: #000000; /* 텍스트를 흰색으로 설정 */
 }
 
 .main-content {
@@ -46,7 +19,7 @@ body {
 }
 
 .search-input {
-  width: 600px;
+  width: 800px;
   padding: 10px;
   border: 1px solid black;
   border-radius: 20px;
@@ -90,20 +63,24 @@ body {
   height: auto;
 }
 
-.background-image {
-    opacity: 0.3;
+.bgimg {
+    position: relative;
+    left: 100px; /* 오른쪽으로 이동 */
+    width: 2100px;
 }
 
 .bginfo {
   text-align: center;
   font-size: 24px;
   margin-top: 120px;
+  color: #ffffff;
 }
 
 .bginfo2 {
   text-align: center;
   font-size: 20px;
   margin-top: 10px;
+  color: #ffffff; 
 }
 
 .loading {

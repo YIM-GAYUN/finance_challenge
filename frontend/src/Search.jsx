@@ -120,7 +120,7 @@ const Search = () => {
           <div className="background-image">
             <div className = 'bginfo'>내가 투자하는 종목의 RPG 캐릭터성을 알아보세요</div>
             <div className = 'bginfo2'>RPG 캐릭터에 대한 각각의 설명은 '캐릭터 소개' 페이지에서 확인할 수 있습니다.</div>
-            <img src="/asset/bg.png" alt="Background" />
+            <div className = 'bgimg'><img src="/asset/bg.png" alt="Background" /></div>
           </div>
         )}
       </main>
