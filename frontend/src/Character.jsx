@@ -47,6 +47,7 @@ const Character = () => {
             </div>
           </div>
         </div>
+        <br /><br /><br /><br />
         <div className="character-row">
           <div className="character-card">
             <img src={adventurerWarrior} alt="모험 전사" className="character-image" />
