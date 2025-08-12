@@ -47,7 +47,7 @@ const Search = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="종목명을 입력하세요 (예: 삼성전자)"
+            placeholder="   종목명을 입력하세요 (예: 삼성전자)"
             className="search-input"
           />
           <button onClick={handleSearch} className="search-button">

@@ -1,15 +1,26 @@
+@font-face {
+  font-family: 'cafe';
+  src: url('/fonts/Cafe24PROUP.woff2') format('woff');
+}
+@font-face {
+  font-family: 'esamanru';
+  src: url('/fonts/esamanru Medium.ttf') format('truetype');
+}
+
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #ffc71e;
+  background-color: #ffffff;
   padding: 10px 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  height: 120px;
 }
 
 .logo {
-  width: 120px;
+  width: 140px;
   height: 50px;
+  margin-left: 30px;
 }
 
 .nav {
@@ -21,12 +32,12 @@
 .nav-link {
   text-decoration: none;
   color: gray;
-  font-size: 20px !important; /* 모든 상태에서 글자 크기를 강제로 24px로 설정 */
-  margin-right: 20px; /* 글자를 추가로 왼쪽으로 이동 */
+  font-size: 22px !important; /* 모든 상태에서 글자 크기를 강제로 20px로 설정 */
+  margin-right: 30px; /* 글자를 추가로 왼쪽으로 이동 */
+  font-family: 'esamanru', sans-serif;
 }
 
 .nav-link.active {
-  color: black;
-  font-weight: bold;
-  font-size: 24px; /* active 상태에서도 글자 크기를 24px로 설정 */
+  color: rgb(34, 34, 34);
+  font-family: 'esamanru', sans-serif;
 }
