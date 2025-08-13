@@ -4,9 +4,12 @@
 이 프로젝트는 React 기반의 프론트엔드와 Python FastAPI 기반의 백엔드로 구성된 금융 데이터 분석 및 시각화 도구입니다. 사용자는 검색 바를 통해 데이터를 검색하고, RPG 분류 및 AI 기반 투자 전략 생성 기능을 활용할 수 있습니다. OpenAI GPT-4와 Finnhub API를 활용하여 실시간 데이터를 분석하고, 투자 전략 및 요약 정보를 제공합니다.
 
 ## 프로젝트 결과물
-https://youtu.be/n8fnSXLbsSY
-[![웹페이지](https://img.youtube.com/vi/영상ID/0.jpg)](https://www.youtube.com/watch?v=n8fnSXLbsSY)
-
+[영상] https://youtu.be/n8fnSXLbsSY
+[사진]
+<img width="1919" height="1079" alt="스크린샷 2025-08-13 232059" src="https://github.com/user-attachments/assets/d31fe79e-e54b-49bb-b3b4-109850d8568c" />
+<img width="1919" height="1077" alt="스크린샷 2025-08-13 231628" src="https://github.com/user-attachments/assets/7e3fe2c8-19ea-46f7-a7f3-1b0f3c386600" />
+<img width="1919" height="1079" alt="스크린샷 2025-08-13 232040" src="https://github.com/user-attachments/assets/e57126a8-f5bc-447a-9dec-789af53f695b" />
+<img width="1919" height="1079" alt="스크린샷 2025-08-13 230926" src="https://github.com/user-attachments/assets/bfd688cf-598b-41f4-b3c3-baa4187c9c37" />
 
 ---
 
