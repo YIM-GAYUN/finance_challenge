@@ -5,7 +5,8 @@
 
 ## 프로젝트 결과물
 https://youtu.be/n8fnSXLbsSY
-<iframe width="560" height="315" src="https://www.youtube.com/embed/n8fnSXLbsSY" frameborder="0" allowfullscreen></iframe>
+[![웹페이지](https://img.youtube.com/vi/영상ID/0.jpg)](https://www.youtube.com/watch?v=n8fnSXLbsSY)
+
 
 ---
 
