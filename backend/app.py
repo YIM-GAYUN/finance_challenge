@@ -279,7 +279,7 @@ def get_metrics_from_naver_finance(ticker_or_code: str):
 
     per = pbr = roe = eps = bps = None
 
-    # 1) JSON 엔드포인트 시도 (가장 간단/안정)
+    # 1) JSON 엔드포인트 시도
     try:
         r = sess.get(NAVER_JSON_URL, headers=headers, params={"itemcode": itemcode}, timeout=5)
         if not r.content:
@@ -368,7 +368,7 @@ def get_metrics_from_naver_finance(ticker_or_code: str):
     return per, pbr, roe
 
 # =========================================================
-# 3) RPG 분류 & GPT 요약 (기존 로직 재사용)
+# 3) RPG 분류 & GPT 요약
 # =========================================================
 def classify_rpg(roe, per, pbr):
     roe_tag = "High" if (roe is not None and roe >= 10) else "Low"
@@ -474,8 +474,6 @@ def gpt_generate(company, roe, per, pbr, rpg_title, rpg_desc):
 
 # =========================================================
 # 4) 엔드포인트
-#    - /api/analyze_by_name?name=삼성전자
-#    - /api/analyze?ticker=005930.KS
 # =========================================================
 @app.get("/api/analyze_by_name")
 def analyze_by_name(name: str = Query(..., description="회사명(한글/영문) 또는 6자리 코드")):
