@@ -1,7 +1,7 @@
 # Finance Challenge Project
 
 ## 프로젝트 개요
-이 프로젝트는 React 기반의 프론트엔드와 Python FastAPI 기반의 백엔드로 구성된 금융 데이터 분석 및 시각화 도구입니다. 사용자는 검색 바를 통해 데이터를 검색하고, RPG 분류 및 AI 기반 투자 전략 생성 기능을 활용할 수 있습니다. OpenAI GPT-4와 Finnhub API를 활용하여 실시간 데이터를 분석하고, 투자 전략 및 요약 정보를 제공합니다.
+이 프로젝트는 React 기반의 프론트엔드와 Python FastAPI 기반의 백엔드로 구성된 금융 데이터 분석 및 시각화 도구입니다. 사용자는 검색 바를 통해 데이터를 검색하고, RPG 분류 및 AI 기반 투자 전략 생성 기능을 활용할 수 있습니다. OpenAI GPT-4와 Finnhub API 및 네이버 금융 크롤링을 활용하여 실시간 데이터를 분석하고, 투자 전략 및 요약 정보를 제공합니다.
 
 ## 프로젝트 결과물
 [영상] https://youtu.be/n8fnSXLbsSY
