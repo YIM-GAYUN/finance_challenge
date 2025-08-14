@@ -44,11 +44,14 @@ print(f"Loaded Finnhub API Key: {bool(FINNHUB_API_KEY)}")
 
 app.add_middleware(
     CORSMiddleware,
-    # allow_origins=["http://127.0.0.1:5173", "http://localhost:5173", "https://finance-challenge-psi.vercel.app"],
-    allow_origins=["*"],
+    allow_origins=[
+        "http://127.0.0.1:5173",  # 로컬 개발 환경
+        "http://localhost:5173",  # 로컬 개발 환경
+        "https://finance-challenge-psi.vercel.app",  # Vercel 배포 URL
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # 모든 HTTP 메서드 허용
+    allow_headers=["*"],  # 모든 HTTP 헤더 허용
 )
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
