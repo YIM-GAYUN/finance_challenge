@@ -3,7 +3,8 @@ import './Search.css';
 import logo from './asset/logo.png';
 import { Link } from 'react-router-dom';
 
-const API_BASE_URL = "http://127.0.0.1:8000";
+const API_BASE_URL = "http://127.0.0.1:8000"; // 로컬에서 실행할 경우
+const VITE_API_URL = "https://finance-challenge.onrender.com"; // 배포 페이지에서 실행할 경우
 
 const Search = () => {
   const [activePage, setActivePage] = useState('search');
@@ -18,7 +19,8 @@ const Search = () => {
     setLoading(true); // 로딩 시작
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/analyze_by_name?name=${encodeURIComponent(search)}`);
+      // const response = await fetch(`${API_BASE_URL}/api/analyze_by_name?name=${encodeURIComponent(search)}`); // 로컬에서 실행할 경우
+      const response = await fetch(`${VITE_API_URL}/api/analyze_by_name?name=${encodeURIComponent(search)}`); // 배포 페이지에서 실행할 경우
       if (!response.ok) {
         throw new Error("데이터를 가져오는 데 실패했습니다. 조금 더 구체적인 종목명 또는 영어 종목명을 작성해주세요!");
       }
