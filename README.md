@@ -18,7 +18,8 @@
 ```
 finance_challenge/
 ├── backend/                # 백엔드 디렉토리
-│   └── app.py             # FastAPI 애플리케이션
+│   ├── app.py             # FastAPI 애플리케이션
+│   ├── requirements.txt   # Python 의존성 관리 파일
 ├── frontend/               # 프론트엔드 디렉토리
 │   ├── index.html         # HTML 진입점
 │   ├── package.json       # Node.js 의존성 관리 파일
@@ -73,6 +74,37 @@ finance_challenge/
 
 ---
 
+## 배포 방식
+### 1. 프론트엔드 배포 (Vercel)
+- Vercel을 사용하여 프론트엔드를 배포하였습니다.
+- 환경 변수(`VITE_API_URL`)를 Vercel 대시보드에서 설정해야 합니다.
+
+### 2. 백엔드 배포 (Render)
+- Render를 사용하여 FastAPI 백엔드를 배포하였습니다.
+- Render 대시보드에서 환경 변수(`OPENAI_API_KEY`, `FINNHUB_API_KEY`)를 설정해야 합니다.
+
+---
+
+## 환경 변수 관리
+### `.env` 파일
+- 로컬 개발 환경에서 `.env` 파일을 사용하여 환경 변수를 관리합니다.
+  ```properties
+  OPENAI_API_KEY=your-openai-api-key
+  FINNHUB_API_KEY=your-finnhub-api-key
+  VITE_API_URL=http://127.0.0.1:8000  # 로컬 개발용
+  ```
+
+### Render 환경 변수
+- Render 대시보드에서 다음 환경 변수를 설정합니다:
+  - `OPENAI_API_KEY`
+  - `FINNHUB_API_KEY`
+
+### Vercel 환경 변수
+- Vercel 대시보드에서 다음 환경 변수를 설정합니다:
+  - `VITE_API_URL` (Render 백엔드 URL)
+
+---
+
 ## 주요 기능
 - **검색 페이지**: 사용자가 종목명을 검색하고 관련 데이터를 확인할 수 있는 기능.
 - **소개 페이지**: 프로젝트의 개요와 RPG 캐릭터 기반 투자 설명 제공.
@@ -92,10 +124,9 @@ finance_challenge/
 ---
 
 ## 문제 해결
-### 1. 레이아웃 및 스타일링
-- **검색 페이지**: 로딩 인디케이터와 검색 결과를 추가하여 사용자 경험 개선.
-- **소개 페이지**: 텍스트와 이미지를 적절히 배치하여 가독성 향상.
-- **캐릭터 소개 페이지**: 2행 3열 레이아웃으로 캐릭터 정보를 정렬하고, 이름과 설명을 이미지 오른쪽에 배치.
+### 1. CORS 설정
+- FastAPI의 `CORSMiddleware`를 사용하여 로컬 및 배포 환경에서의 CORS 문제를 해결.
+- `allow_origins`에 로컬(`http://127.0.0.1:5173`)과 배포된 Vercel URL을 모두 포함.
 
 ### 2. API 호출 문제
 - `.env` 파일에 API 키를 올바르게 설정하여 OpenAI 및 Finnhub API 호출 문제 해결.
