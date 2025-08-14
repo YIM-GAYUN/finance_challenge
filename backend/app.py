@@ -47,7 +47,7 @@ app.add_middleware(
     allow_origins=[
         "http://127.0.0.1:5173",  # 로컬 개발 환경
         "http://localhost:5173",  # 로컬 개발 환경
-        "https://finance-challenge-psi.vercel.app",  # Vercel 배포 URL
+        "https://finance-challenge-two.vercel.app",  # Vercel 배포 URL
     ],
     allow_credentials=True,
     allow_methods=["*"],  # 모든 HTTP 메서드 허용

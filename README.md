@@ -5,7 +5,7 @@
 
 ## 프로젝트 결과물
 [영상] https://youtu.be/n8fnSXLbsSY<br>
-[웹페이지 링크] https://finance-challenge-psi.vercel.app/<br><br>
+[웹페이지 링크] https://finance-challenge-two.vercel.app/<br><br>
 
 <img width="1919" height="1079" alt="스크린샷 2025-08-13 232059" src="https://github.com/user-attachments/assets/d31fe79e-e54b-49bb-b3b4-109850d8568c" />
 <img width="1919" height="1077" alt="스크린샷 2025-08-13 231628" src="https://github.com/user-attachments/assets/7e3fe2c8-19ea-46f7-a7f3-1b0f3c386600" />
