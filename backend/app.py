@@ -44,7 +44,7 @@ print(f"Loaded Finnhub API Key: {bool(FINNHUB_API_KEY)}")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5173", "http://localhost:5173", "https://finance-challenge-psi.vercel.app/"],
+    allow_origins=["http://127.0.0.1:5173", "http://localhost:5173", "https://finance-challenge-psi.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
