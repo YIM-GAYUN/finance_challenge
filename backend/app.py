@@ -44,7 +44,7 @@ print(f"Loaded Finnhub API Key: {bool(FINNHUB_API_KEY)}")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 모든 도메인 허용 (필요에 따라 제한 가능)
+    allow_origins=["https://finance_challenge.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
